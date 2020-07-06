@@ -11,6 +11,8 @@
 
     <properties>
         <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
+        <oracle.version>11.2.0.3</oracle.version>
+        <lombok.version>1.18.10</lombok.version>
     </properties>
 
     <licenses>
@@ -36,6 +38,21 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!--Lombok begin-->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <!--Lombok end-->
+
+            <!--database-->
+            <dependency>
+                <groupId>com.oracle</groupId>
+                <artifactId>ojdbc6</artifactId>
+                <version>${oracle.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

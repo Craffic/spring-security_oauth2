@@ -1,12 +1,22 @@
 package com.craffic.spring.security.oauth2.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
+import javax.sql.DataSource;
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
@@ -14,28 +24,42 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource")
     /**
-     * 配置客户端
-     * 做授权操作
-     * 资源所有者，要对客户端授权
-     * @param clients
-     * @throws Exception
+     * 读取配置在application.yml里的数据源
+     * @Bean
+     * @Primary datasource已经在spring配置过了，我们再在application里配置的话就会出现重复配置的现象
+     *          primary注解就会把默认的数据源配置覆盖掉
+     * @ConfigurationProperties 还要指定配置的是谁
      */
+    public DataSource dataSource() {
+        // 配置数据源（注意，我使用的是 HikariCP 连接池），以上注解是指定数据源，否则会有冲突
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean
+    public TokenStore tokenStore() {
+        // 基于 JDBC 实现，令牌保存到数据库
+        return new JdbcTokenStore(dataSource());
+    }
+
+    @Bean
+    public ClientDetailsService jdbcClientDetailsService() {
+        // 基于 JDBC 实现，需要事先在数据库配置客户端信息
+        return new JdbcClientDetailsService(dataSource());
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        // 设置令牌存储模式
+        endpoints.tokenStore(tokenStore());
+    }
+
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        // 客户端请求服务器， 要和客户端对接上，服务端要知道客户端是谁
-        // 客户端的信息要存在服务端，不然不认识，不能全部人都能请求我的token或者授权码
-        // 流程：
-        // 客户端需要请求认证服务器，服务器通过回调地址返回授权码给客户端，认证服务器要存着客户端的信息
-        // clients.inMemory()  把客户端信息存放在内存当中
-        // withClient("client")  需要clientId  ，就叫client
-        // secret("secret")    client_secret就叫secret
-        // 总结：客户端的ID，客户端的安全码
-        // authorizedGrantTypes   想用什么授权模式: authorization_code(授权码模式)
-        // scopes  授权范围：比如QQ登录有道云笔记时，会获取qq的头像昵称性别等信息的范围。
-
-        clients.inMemory().withClient("client").secret(passwordEncoder.encode("secret")).authorizedGrantTypes("authorization_code")
-                .scopes("app")
-                .redirectUris("http://www.funtl.com");
+        // 客户端配置
+        clients.withClientDetails(jdbcClientDetailsService());
     }
 }

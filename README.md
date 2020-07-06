@@ -24,3 +24,90 @@ spring-security_oauth2基于内存储存令牌
         grant_type        authorization_code
         code              IOMu2o   
 7. 拿到token，可以到资源服务器申请访问资源        
+
+
+
+#添加Oracle数据库和Hikari连接池
+1. 添加Oracle数据库依赖
+```xml
+<dependency>
+    <groupId>com.oracle</groupId>
+    <artifactId>ojdbc6</artifactId>
+    <version>11.2.0.3</version>
+</dependency>
+```
+2. 添加Hkari连接池依赖
+````xml
+<dependency>
+    <groupId>com.zaxxer</groupId>
+    <artifactId>HikariCP</artifactId>
+    <version>3.3.1</version>
+</dependency>
+````
+3. 添加连接池配置
+````property
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      jdbc-url: jdbc:oracle:thin:@localhost:1521:DEV
+      username: Craffic
+      password: Craffic
+      minimum-idle: 5
+      idle-timeout: 600000
+      auto-commit: true
+      pool-name: MyHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: select 1
+````
+4. 重新覆盖数据源和配置客户端信息
+```java
+@Configuration
+@EnableAuthorizationServer
+public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource")
+    /**
+     * 读取配置在application.yml里的数据源
+     * @Bean
+     * @Primary datasource已经在spring配置过了，我们再在application里配置的话就会出现重复配置的现象
+     *          primary注解就会把默认的数据源配置覆盖掉
+     * @ConfigurationProperties 还要指定配置的是谁
+     */
+    public DataSource dataSource() {
+        // 配置数据源（注意，我使用的是 HikariCP 连接池），以上注解是指定数据源，否则会有冲突
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean
+    public TokenStore tokenStore() {
+        // 基于 JDBC 实现，令牌保存到数据库
+        return new JdbcTokenStore(dataSource());
+    }
+
+    @Bean
+    public ClientDetailsService jdbcClientDetailsService() {
+        // 基于 JDBC 实现，需要事先在数据库配置客户端信息
+        return new JdbcClientDetailsService(dataSource());
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        // 设置令牌存储模式
+        endpoints.tokenStore(tokenStore());
+    }
+
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        // 客户端配置
+        clients.withClientDetails(jdbcClientDetailsService());
+    }
+}
+```
