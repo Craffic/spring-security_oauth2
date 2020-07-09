@@ -111,3 +111,102 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     }
 }
 ```
+
+
+# 基于RBAC的方式获取用户信息和权限交给Security框架认证与授权
+1. service方法根据用户名获取TbUser对象
+2. TbPermissionService方法，根据用户id获取用户对应的权限
+3. 新建UserDetailServiceImpl实现UserDetailService接口，并获取用户信息和对应权限
+   把查询出来的userId、password、权限集合注入到User对象中，交给Security框架认证与授权。
+````java
+package com.craffic.spring.security.oauth2.server.config.service;
+
+import com.craffic.spring.security.oauth2.domain.model.TbPermission;
+import com.craffic.spring.security.oauth2.domain.model.TbUser;
+import com.craffic.spring.security.oauth2.service.TbPermissionService;
+import com.craffic.spring.security.oauth2.service.UserService;
+import org.assertj.core.util.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.List;
+
+public class UserDetailServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private TbPermissionService permissionService;
+
+
+    @Override
+    public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
+
+        // 根据登录页面的用户名查询用户
+        TbUser user = userService.getTbUserByUserName(name);
+
+        List<GrantedAuthority> grantedAuthorities = Lists.newArrayList();
+        if (user != null){
+            // 根据用户id查询对应的权限
+            List<TbPermission> permissions = permissionService.getTbPermissionByUserId(user.getId());
+            permissions.forEach(tbPermission -> {
+                GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getId());
+                grantedAuthorities.add(grantedAuthority);
+            });
+        }
+        // 返回用户的
+        return new User(user.getId(), user.getPassword(), grantedAuthorities);
+    }
+}
+````   
+
+4. 从以前的内存存储用户信息的方式，改为从数据库读取
+````java
+package com.craffic.spring.security.oauth2.server.config;
+
+import com.craffic.spring.security.oauth2.server.config.service.UserDetailServiceImpl;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder (){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Override
+    public UserDetailsService userDetailsService(){
+        return new UserDetailServiceImpl();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // 基于内存存储用户信息方式
+        /*auth.inMemoryAuthentication()
+                .withUser("admin").password(passwordEncoder().encode("123456")).roles("ADMIN")
+                .and()
+                .withUser("user").password(passwordEncoder().encode("123456")).roles("USER");*/
+
+        // JDBC方式读取用户信息和权限信息
+        auth.userDetailsService(userDetailsService());
+    }
+}
+````
+
+

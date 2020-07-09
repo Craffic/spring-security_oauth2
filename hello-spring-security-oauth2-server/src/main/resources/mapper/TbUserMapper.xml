@@ -2,15 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.craffic.spring.security.oauth2.dao.TbUserDao">
     <sql id="TbUserColumns">
-        u.id,
-        u.username,
-        u.phone,
-        u.email,
-        u.created,
-        u.updated
+        id,
+        username,
+        phone,
+        email,
+        created,
+        updated
     </sql>
 
     <select id="selectById" resultType="com.craffic.spring.security.oauth2.domain.vo.M_TbUserVo">
-      SELECT * FROM TB_USER T WHERE T.ID = #{id}
+      SELECT
+          <include refid="TbUserColumns" />
+       FROM TB_USER WHERE ID = #{id}
+    </select>
+
+    <select id="selectByName" resultType="com.craffic.spring.security.oauth2.domain.model.TbUser">
+        SELECT
+            id,
+            username,
+            password,
+            phone,
+            email,
+            created,
+            updated
+        FROM TB_USER WHERE USERNAME = #{name}
     </select>
 </mapper>

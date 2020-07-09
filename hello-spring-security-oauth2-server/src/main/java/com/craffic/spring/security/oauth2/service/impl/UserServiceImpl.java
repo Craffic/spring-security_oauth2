@@ -1,6 +1,7 @@
 package com.craffic.spring.security.oauth2.service.impl;
 
 import com.craffic.spring.security.oauth2.dao.TbUserDao;
+import com.craffic.spring.security.oauth2.domain.model.TbUser;
 import com.craffic.spring.security.oauth2.domain.vo.M_TbUserVo;
 import com.craffic.spring.security.oauth2.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,4 +22,8 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public TbUser getTbUserByUserName(String userName) {
+        return userDao.selectByName(userName);
+    }
 }

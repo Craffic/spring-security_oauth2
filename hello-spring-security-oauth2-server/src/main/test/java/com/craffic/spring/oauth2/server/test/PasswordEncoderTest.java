@@ -5,5 +5,8 @@ public class PasswordEncoderTest {
     public static void main(String[] args) {
         // secret加密
         System.out.println(new BCryptPasswordEncoder().encode("secret"));
+
+        // 123456
+        System.out.println(new BCryptPasswordEncoder().encode("123456"));
     }
 }

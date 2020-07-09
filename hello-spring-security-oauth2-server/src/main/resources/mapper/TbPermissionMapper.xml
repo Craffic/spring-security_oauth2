@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.craffic.spring.security.oauth2.dao.TbPermissionDao">
+    <sql id="TbPermissionColumns">
+          TP.ID,
+          TP.PARENT_ID,
+          TP.NAME,
+          TP.ENNAME,
+          TP.URL,
+          TP.DESCRIPTION,
+          TP.CREATED,
+          TP.UPDATED
+    </sql>
+
+    <select id="getTbPermissionByUserId" resultType="com.craffic.spring.security.oauth2.domain.model.TbPermission">
+        SELECT TP.ID,
+               TP.PARENT_ID,
+               TP.NAME,
+               TP.ENNAME,
+               TP.URL,
+               TP.DESCRIPTION,
+               TP.CREATED,
+               TP.UPDATED
+        FROM TB_USER TU
+                 LEFT JOIN TB_USER_ROLE UR
+                           ON UR.USER_ID = TU.ID
+                 LEFT JOIN TB_ROLE TR
+                           ON TR.ID = UR.ROLE_ID
+                 LEFT JOIN TB_ROLE_PERMISSION RP
+                           ON RP.ROLE_ID = TR.ID
+                 LEFT JOIN TB_PERMISSION TP
+                           ON TP.ID = RP.PERMISSION_ID
+        WHERE TU.ID = #{userId}
+    </select>
+</mapper>
