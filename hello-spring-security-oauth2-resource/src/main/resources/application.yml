@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: oauth2-server
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    jdbc-url: jdbc:oracle:thin:@localhost:1521:DEV
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: Craffic
+    password: Craffic
+    url: jdbc:oracle:thin:@localhost:1521:DEV
+    hikari:
+      #      jdbc-url: jdbc:oracle:thin:@localhost:1521:DEV
+      minimum-idle: 5
+      idle-timeout: 600000
+      auto-commit: true
+      pool-name: MyHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: select 1
+#    druid:
+#      url: jdbc:oracle:thin:@localhost:1521:DEV
+#      username: Craffic
+#      password: Craffic
+#      driver-class-name: oracle.jdbc.OracleDriver
+server:
+  port: 8081
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.craffic.spring.security.oauth2.domain.model

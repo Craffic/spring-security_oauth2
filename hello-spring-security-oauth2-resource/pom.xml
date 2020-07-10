@@ -9,8 +9,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>hello-spring-security-oauth2-server</artifactId>
-    <url>http://www.Craffic.com</url>
+    <artifactId>hello-spring-security-oauth2-resource</artifactId>
+    <url>http://www.funtl.com</url>
 
     <licenses>
         <license>
@@ -106,7 +106,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.craffic.spring.security.oauth2.server.OAuth2ServerApplication</mainClass>
+                    <mainClass>com.funtl.oauth2.OAuth2ResourceApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

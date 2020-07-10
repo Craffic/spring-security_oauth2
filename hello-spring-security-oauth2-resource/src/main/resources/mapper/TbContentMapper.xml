@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.craffic.spring.security.oauth2.resource.dao.TbContentDao">
+    <sql id="TbContentColumns">
+        ID,
+        CATEGORY_ID,
+        TITLE,
+        SUB_TITLE,
+        TITLE_DESC,
+        URL,
+        PIC,
+        PIC2,
+        CONTENT,
+        CREATED,
+        UPDATED
+    </sql>
+
+    <select id="selectById" resultType="com.craffic.spring.security.oauth2.resource.domain.model.TbContent">
+      SELECT
+          <include refid="TbContentColumns" />
+       FROM TB_CONTENT WHERE ID = #{id}
+    </select>
+</mapper>

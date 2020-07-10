@@ -1,0 +1,48 @@
+
+CREATE TABLE TB_CONTENT (
+    ID VARCHAR2(50) NOT NULL PRIMARY KEY,
+    CATEGORY_ID VARCHAR2(50) NOT NULL,
+    TITLE VARCHAR2(200) DEFAULT NULL,
+    SUB_TITLE VARCHAR2(100) DEFAULT NULL,
+    TITLE_DESC VARCHAR2(500) DEFAULT NULL,
+    URL VARCHAR2(500) DEFAULT NULL,
+    PIC VARCHAR2(300) DEFAULT NULL,
+    PIC2 VARCHAR2(300) DEFAULT NULL,
+    CONTENT VARCHAR2(4000),
+    CREATED DATE DEFAULT SYSDATE,
+    UPDATED DATE DEFAULT SYSDATE
+);
+comment on table TB_CONTENT is '内容表';
+comment on column TB_CONTENT.ID is '内容id';
+comment on column TB_CONTENT.CATEGORY_ID is '内容类目ID';
+comment on column TB_CONTENT.TITLE is '内容标题';
+comment on column TB_CONTENT.SUB_TITLE is '子标题';
+comment on column TB_CONTENT.TITLE_DESC is '标题描述';
+comment on column TB_CONTENT.URL is '链接';
+comment on column TB_CONTENT.PIC is '图片绝对路径';
+comment on column TB_CONTENT.PIC2 is '图片2';
+comment on column TB_CONTENT.CONTENT is '内容';
+comment on column TB_CONTENT.CREATED is '创建时间';
+comment on column TB_CONTENT.UPDATED is '更新时间';
+
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+CREATE TABLE TB_CONTENT_CATEGORY (
+    ID VARCHAR2(50) NOT NULL,
+    PARENT_ID VARCHAR2(50) DEFAULT NULL,
+    NAME VARCHAR2(50) DEFAULT NULL,
+    STATUS NUMBER(1) DEFAULT '1',
+    SORT_ORDER NUMBER(4) DEFAULT NULL,
+    IS_PARENT NUMBER(1) DEFAULT '1',
+    CREATED DATE DEFAULT NULL,
+    UPDATED DATE DEFAULT NULL
+);
+COMMENT ON TABLE TB_CONTENT_CATEGORY IS '内容分类';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.ID IS '类目ID';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.PARENT_ID IS '父类目ID=0时，代表的是一级的类目';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.NAME IS '分类名称';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.STATUS IS '状态。可选值:1(正常),2(删除)';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.SORT_ORDER IS '排列序号，表示同级类目的展现次序，如数值相等则按名称次序排列。取值范围:大于零的整数';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.IS_PARENT IS '该类目是否为父类目，1为true，0为false';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.CREATED IS '创建时间';
+COMMENT ON COLUMN TB_CONTENT_CATEGORY.UPDATED IS '更新时间';
