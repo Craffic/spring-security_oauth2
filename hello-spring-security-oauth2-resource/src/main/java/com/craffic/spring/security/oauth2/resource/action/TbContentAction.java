@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/content")
+@RequestMapping(value = "/contents")
 public class TbContentAction {
 
     @Autowired
     private TbContentService contentService;
 
-    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    @RequestMapping(value = "/view", method = RequestMethod.GET)
     public String queryUserById(String id){
         TbContent content = contentService.selectById(id);
         if (content == null){
